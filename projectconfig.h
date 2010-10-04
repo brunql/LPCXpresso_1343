@@ -19,4 +19,7 @@
 
 #define CFG_CPU_CCLK    (72000000)
 
+// UART Rx FIFO buffer size
+#define CFG_UART_BUFSIZE (64)
+
 #endif /* _PROJECTCONFIG_H_ */

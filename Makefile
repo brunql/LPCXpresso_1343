@@ -28,8 +28,8 @@ FM_FREQ_Mhz = 12.000
 ##########################################################################
 # Library files 
 ##########################################################################
-VPATH += core core/cpu core/gpio
-OBJS += cpu.o gpio.o 
+VPATH += core core/cpu core/gpio core/uart core/adc
+OBJS += cpu.o gpio.o uart.o uart_buf.o adc.o
 
 ##########################################################################
 # GNU GCC compiler prefix and location
