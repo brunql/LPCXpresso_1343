@@ -16,8 +16,11 @@
 #include "core/uart/uart.h"
 #include "core/adc/adc.h"
 
-#define BUFFER_SIZE 1860
+// Cadres sync signal: CADRES_SYNC_NUMBER_OF_ONES ADC measurements '1'
+#define CADRES_SYNC_NUMBER_OF_ONES    5
 
+// Video buffer size
+#define BUFFER_SIZE 1774
 uint8_t videoBuffer[BUFFER_SIZE];
 
 void skipVideoLine() {
@@ -36,7 +39,8 @@ int main(void) {
     adcInit();
     uartInit(115200);
     uartRxBufferInit();
- 
+
+    // Debug pin
     gpioSetDir(1, 10, 1);
 
     gpioSetDir(LED_PORT, LED_PIN, 1);
@@ -48,30 +52,24 @@ int main(void) {
         while (uartRxBufferDataPending()) {
             uint8_t uartRx = uartRxBufferRead();
             if (uartRx == 0xf0) {
-
-                gpioSetValue(1, 10, 1);
+                
                 gpioSetValue(LED_PORT, LED_PIN, 1);
 
-                // Find cadres sync signal: 12 measurements == 1
-                int i = 0;
-                while (1) {
+                // Find cadres sync signal: CADRES_SYNC_NUMBER_OF_ONES measurements '1'
+                int one = 0;
+                while (one < CADRES_SYNC_NUMBER_OF_ONES) {
                     if (adcRead_ADC0() == 1) {
-                        if (++i == 12) {
-                            break;
-                        }
+                        one++;
+                        videoBuffer[one] = 1;
                     } else {
-                        i = 0;
+                        one = 0;
                     }
                 }
-
-                // Skip black 21 lines
-                for (int i = 0; i < 21; i++) {
-                    skipVideoLine();
-                }
+                one = 0;
 
                 // Measure signal to videoBuffer
                 uint8_t prev_result = 0;
-                for (int i = 0; i < BUFFER_SIZE; i++) {                    
+                for (int i = CADRES_SYNC_NUMBER_OF_ONES; i < BUFFER_SIZE; i++) {
                     uint8_t result = adcRead_ADC0();
                     videoBuffer[i] = result;
                     
@@ -84,19 +82,14 @@ int main(void) {
                     }
                     prev_result = result;
                 }
-
                 gpioSetValue(1, 10, 0);
-                for(volatile int i=0; i<2000; i++){
-                    gpioSetValue(1, 10, 0);
-                }
-                gpioSetValue(1, 10, 1);
+                
 
                 // Send videoBuffer to PC
                 for (int i = 0; i < BUFFER_SIZE; i++) {
                     uartSendByte(videoBuffer[i]);
                 }
 
-                gpioSetValue(1, 10, 0);
                 gpioSetValue(LED_PORT, LED_PIN, 0);
 
             }
