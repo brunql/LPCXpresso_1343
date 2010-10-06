@@ -28,8 +28,8 @@ FM_FREQ_Mhz = 12.000
 ##########################################################################
 # Library files 
 ##########################################################################
-VPATH += core core/cpu core/gpio core/uart core/adc
-OBJS += cpu.o gpio.o uart.o uart_buf.o adc.o
+VPATH += core core/cpu core/gpio core/uart core/adc core/usbhid-rom
+OBJS += cpu.o gpio.o uart.o uart_buf.o adc.o usbhid.o usbconfig.o
 
 ##########################################################################
 # GNU GCC compiler prefix and location
